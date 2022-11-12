@@ -1,0 +1,91 @@
+<html lang="en" style="width:100%; height:100%;">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Varun's Resume</title>
+    <link rel="icon" type="image/x-icon" href="./logo.png">
+    <style>
+        #popup {
+            position: fixed;
+            height: 100vh;
+            width: 100vw;
+            top:0px;
+            display: grid;
+            place-content: center;
+            z-index: 1;
+        }
+        div[data-hidden="true"] {
+            display: none !important;
+        }
+        #popbutton,#callbutton,#wabutton,#resumeButton {
+            display: grid;
+            place-content: center;
+            background: rgba(87, 87, 224, 0.7);
+            border: none;
+            color:white;
+            font-size: 2em;
+            padding: 0.5em;
+            border-radius: 50%;
+            height: 2em;
+            width: 2em;
+        }
+        #popbutton:active,#callbutton:active,#wabutton:active,#resumeButton:active {
+            border: yellow 2px solid;
+        }
+        #callbutton {
+            background: rgba(224, 87, 87, 0.7);
+            bottom: 1em;
+        }
+        #wabutton {
+            background: rgba(87, 224, 87, 0.7);
+            bottom: 7em;
+        }
+        #resumeButton {
+            background: rgba(224, 224, 87, 0.7);
+            bottom: 10em;
+        }
+        #buttons {
+            display: flex;
+            flex-direction: row;
+            gap:1em;
+            position: fixed;
+            right: 1em;
+            top: 1em;
+            z-index: 2;
+        }
+        a {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body style="width:100%; height:100%; margin:0;">
+<iframe src="./VarunChaubey.pdf" style="width:100%; height:100%;" frameborder="0"></iframe>
+<div id="popup" data-hidden="true">
+    <!-- Calendly inline widget begin -->
+    <div class="calendly-inline-widget" data-url="https://calendly.com/varunix/30min" style="min-width:320px;width:100vw;height:100vh;"></div>
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+    <!-- Calendly inline widget end -->
+</div>
+<div id="buttons">
+<a href="tel:+917838173706">
+    <Button id="callbutton">
+        <i class="fa fa-phone" aria-hidden="true"></i>
+    </Button>
+</a>
+<a href="https://wa.me/+917838173706?text=👋">
+    <Button id="wabutton">
+        <i class="fa fa-whatsapp" aria-hidden="true"></i>
+    </Button>
+</a>
+<a href="./VarunChaubey.pdf" download>
+    <Button id="resumeButton">
+        <i class="fa fa-download" aria-hidden="true"></i>
+    </Button>
+</a>
+<Button id="popbutton" onclick="popup.dataset.hidden === 'true'?popup.dataset.hidden = 'false':popup.dataset.hidden = 'true'">
+    <i class="fa fa-calendar" aria-hidden="true"></i>
+</Button>
+</div>
+</body>
+</html>
