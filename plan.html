@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departure Dossier — Varun Chaubey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#182642;
+  --navy-deep:#0E1830;
+  --navy-soft:#26375B;
+  --paper:#E6E4DC;
+  --paper-2:#DCD9CF;
+  --paper-3:#D0CCC0;
+  --ink:#1A1E26;
+  --muted:#6C7280;
+  --gold:#A98B4E;
+  --gold-bright:#C9A863;
+  --stamp-green:#2C6149;
+  --stamp-red:#9C3226;
+  --stamp-violet:#4A3B78;
+  --hair:rgba(26,30,38,.16);
+  --hair-light:rgba(230,228,220,.18);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Public Sans",system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- security paper texture ---------- */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(58deg, rgba(24,38,66,.05) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-58deg, rgba(24,38,66,.04) 0 1px, transparent 1px 9px);
+}
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 20px 90px}
+
+/* ---------- data page header ---------- */
+.dossier{
+  background:var(--navy);
+  color:var(--paper);
+  margin:0 -20px 34px;
+  padding:32px 24px 0;
+  border-bottom:3px solid var(--gold);
+  position:relative;overflow:hidden;
+}
+.dossier::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg, rgba(201,168,99,.055) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 78% 18%, rgba(201,168,99,.12), transparent 46%);
+}
+.dossier > *{position:relative;z-index:1}
+
+.crest{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:16px;flex-wrap:wrap;
+  padding-bottom:16px;border-bottom:1px solid var(--hair-light);
+}
+.crest-l .eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--gold-bright);
+}
+.crest-l h1{
+  font-family:"Spectral",Georgia,serif;font-weight:600;
+  font-size:clamp(28px,5.4vw,44px);line-height:1.02;
+  margin:8px 0 6px;letter-spacing:-.01em;
+}
+.crest-l .sub{font-size:13.5px;color:rgba(230,228,220,.66);max-width:44ch;margin:0}
+.crest-r{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.9;
+  color:rgba(230,228,220,.55);text-align:right;letter-spacing:.06em;
+}
+.crest-r b{color:var(--gold-bright);font-weight:500}
+
+/* ---------- headline meter ---------- */
+.meter{padding:22px 0 20px;display:flex;gap:26px;align-items:flex-end;flex-wrap:wrap}
+.meter-n{font-family:"IBM Plex Mono",monospace;line-height:1}
+.meter-n .big{font-size:clamp(40px,9vw,64px);font-weight:500;color:var(--gold-bright);letter-spacing:-.03em}
+.meter-n .of{font-size:16px;color:rgba(230,228,220,.42)}
+.meter-n .cap{
+  display:block;margin-top:9px;font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(230,228,220,.45);
+}
+.bars{flex:1;min-width:230px;display:flex;flex-direction:column;gap:9px;padding-bottom:6px}
+.barline{display:flex;align-items:center;gap:11px;font-family:"IBM Plex Mono",monospace;font-size:10.5px}
+.barline .lbl{width:76px;letter-spacing:.11em;text-transform:uppercase;color:rgba(230,228,220,.5);flex-shrink:0}
+.barline .track{flex:1;height:6px;background:rgba(230,228,220,.13)}
+.barline .fill{height:100%;background:var(--gold);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.barline .pct{width:36px;text-align:right;color:rgba(230,228,220,.72)}
+
+/* ---------- MRZ (signature) ---------- */
+.mrz{
+  margin:0 -24px;padding:13px 24px 15px;
+  background:var(--navy-deep);border-top:1px solid var(--hair-light);
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;
+  letter-spacing:.16em;color:var(--gold-bright);
+  white-space:nowrap;overflow-x:auto;line-height:1.85;
+  scrollbar-width:none;
+}
+.mrz::-webkit-scrollbar{display:none}
+.mrz span{opacity:.34}
+
+/* ---------- controls ---------- */
+.controls{
+  display:flex;gap:9px;flex-wrap:wrap;align-items:center;
+  margin:0 0 26px;padding-bottom:18px;border-bottom:1px solid var(--hair);
+}
+.btn{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.15em;
+  text-transform:uppercase;padding:8px 14px;cursor:pointer;
+  background:transparent;color:var(--muted);
+  border:1px solid var(--hair);border-radius:0;transition:all .16s;
+}
+.btn:hover{border-color:var(--navy);color:var(--navy)}
+.btn[aria-pressed="true"]{background:var(--navy);color:var(--paper);border-color:var(--navy)}
+.btn.danger:hover{border-color:var(--stamp-red);color:var(--stamp-red)}
+.spacer{flex:1}
+.saved{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .3s;
+}
+.saved.on{opacity:1}
+
+/* ---------- phase ---------- */
+.phase{margin-bottom:40px}
+.phase-head{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding-bottom:11px;border-bottom:2px solid var(--navy);margin-bottom:4px;
+}
+.phase-no{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  letter-spacing:.2em;color:var(--gold);
+}
+.phase-head h2{
+  font-family:"Spectral",Georgia,serif;font-weight:600;font-size:23px;
+  margin:0;letter-spacing:-.01em;
+}
+.phase-when{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);
+}
+.phase-count{
+  margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);
+}
+.phase-note{
+  font-size:13.5px;color:var(--muted);font-style:italic;
+  margin:10px 0 18px;max-width:70ch;
+}
+
+/* ---------- group ---------- */
+.group{border-bottom:1px solid var(--hair);position:relative}
+.group.done{background:rgba(44,97,73,.045)}
+.g-head{
+  width:100%;display:flex;align-items:center;gap:13px;
+  background:none;border:0;padding:15px 4px;cursor:pointer;
+  text-align:left;font-family:inherit;color:inherit;
+}
+.g-head:hover .g-title{color:var(--navy-soft)}
+.chev{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--gold);
+  transition:transform .22s;flex-shrink:0;width:11px;
+}
+.group.open .chev{transform:rotate(90deg)}
+.g-title{font-weight:600;font-size:16px;letter-spacing:-.005em;transition:color .16s}
+.g-tag{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--hair);padding:2px 7px;flex-shrink:0;
+}
+.g-prog{
+  margin-left:auto;display:flex;align-items:center;gap:11px;flex-shrink:0;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);
+}
+.g-track{width:52px;height:4px;background:var(--paper-3)}
+.g-fill{height:100%;background:var(--navy);transition:width .4s}
+.group.done .g-fill{background:var(--stamp-green)}
+
+.g-body{display:none;padding:2px 4px 20px 24px}
+.group.open .g-body{display:block}
+.g-why{
+  font-size:13.5px;color:var(--muted);margin:0 0 14px;
+  padding-left:13px;border-left:2px solid var(--gold);max-width:72ch;
+}
+
+/* ---------- items ---------- */
+.item{display:flex;gap:12px;padding:7px 0;align-items:flex-start}
+.item input{
+  appearance:none;-webkit-appearance:none;
+  width:15px;height:15px;margin:4px 0 0;flex-shrink:0;cursor:pointer;
+  border:1.5px solid var(--muted);background:transparent;transition:all .14s;
+}
+.item input:hover{border-color:var(--navy)}
+.item input:checked{background:var(--stamp-green);border-color:var(--stamp-green)}
+.item input:checked::after{
+  content:"✓";display:block;color:var(--paper);font-size:11px;
+  line-height:12px;text-align:center;font-weight:700;
+}
+.item input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.item label{cursor:pointer;flex:1;min-width:0}
+.item .t{display:block;font-size:14.5px;line-height:1.45}
+.item .d{display:block;font-size:12.5px;color:var(--muted);margin-top:1px;line-height:1.45}
+.item input:checked ~ label .t{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.item input:checked ~ label .d{opacity:.5}
+.item.hide{display:none}
+
+/* ---------- stamp (signature) ---------- */
+.stamp{
+  position:absolute;top:6px;right:8px;pointer-events:none;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--stamp-green);border:2px solid var(--stamp-green);
+  padding:5px 11px;transform:rotate(-8deg) scale(.85);opacity:0;
+  transition:opacity .4s,transform .4s cubic-bezier(.34,1.6,.64,1);
+}
+.group.done .stamp{opacity:.72;transform:rotate(-8deg) scale(1)}
+.stamp small{display:block;font-size:8px;letter-spacing:.1em;opacity:.75;font-weight:400}
+
+footer{
+  margin-top:44px;padding-top:20px;border-top:1px solid var(--hair);
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.1em;color:var(--muted);line-height:2;
+}
+
+@media (max-width:620px){
+  .crest-r{text-align:left}
+  .g-tag{display:none}
+  .g-body{padding-left:12px}
+  .stamp{font-size:9px;padding:4px 8px}
+  .phase-count{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="dossier">
+  <div class="crest">
+    <div class="crest-l">
+      <div class="eyebrow">Departure Dossier · 2026</div>
+      <h1>Java backend,<br>routed outward.</h1>
+      <p class="sub">Twelve months from senior engineer in Gurgaon to a sponsored offer abroad. The gap is infrastructure, not experience.</p>
+    </div>
+    <div class="crest-r">
+      HOLDER &nbsp;<b>V. CHAUBEY</b><br>
+      ORIGIN &nbsp;&nbsp;<b>DELHI / IND</b><br>
+      TRACK &nbsp;&nbsp;&nbsp;<b>BACKEND + PLATFORM</b><br>
+      TARGET &nbsp;&nbsp;<b>DE · NL · REMOTE</b>
+    </div>
+  </div>
+
+  <div class="meter">
+    <div class="meter-n">
+      <span class="big" id="mDone">0</span><span class="of"> / <span id="mTotal">0</span></span>
+      <span class="cap">Endorsements cleared</span>
+    </div>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <div class="mrz" id="mrz"></div>
+</header>
+
+<div class="controls">
+  <button class="btn" id="fToggle" aria-pressed="false">Hide cleared</button>
+  <button class="btn" id="expand">Expand all</button>
+  <button class="btn" id="collapse">Collapse all</button>
+  <span class="spacer"></span>
+  <span class="saved" id="saved">Saved</span>
+  <button class="btn danger" id="reset">Reset</button>
+</div>
+
+<main id="board"></main>
+
+<footer>
+  BLUE CARD DE 2026 · €45,934.20 SHORTAGE (IT) · €50,700 STANDARD<br>
+  SAA-C03 · SECURITY 30 / RESILIENCE 26 / PERFORMANCE 24 / COST 20 · PASS 720<br>
+  CKA · TROUBLESHOOT 30 / ARCH 25 / NETWORK 20 / WORKLOADS 15 / STORAGE 10 · PASS 66
+</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA — item = [label, detail?]
+   ============================================================ */
+const PHASES = [
+{
+  no:"01", name:"Close the container gap", when:"Months 1–2",
+  note:"Containers are the single thing most likely to get you filtered out before a human reads anything. Docker and Kubernetes first, and start the DSA cadence now so it has twelve months to compound rather than two.",
+  groups:[
+  { key:"docker", title:"Docker", tag:"Core gap",
+    why:"You have no containerization on your resume at all. For a senior backend role abroad this is disqualifying at screening, regardless of your microservices experience.",
+    items:[
+    ["Images, containers, layers","How the union filesystem works and why layer order determines build speed."],
+    ["Dockerfile mechanics","Instruction ordering, build cache invalidation, .dockerignore."],
+    ["Multi-stage builds","Build a Spring Boot image that ships only a JRE and the jar. This is the standard interview follow-up."],
+    ["Image size discipline","Distroless vs Alpine vs Temurin slim. jlink for a custom runtime."],
+    ["JVM inside a container","Container-aware heap sizing, MaxRAMPercentage, CPU shares. The classic production surprise."],
+    ["Networking","Bridge, host and user-defined networks. DNS resolution between containers."],
+    ["Volumes vs bind mounts","Persist Postgres data locally without losing it on every rebuild."],
+    ["docker compose","Your app plus Postgres plus Redis in one file, with healthchecks and depends_on conditions."],
+    ["Registries","Push to ECR and GHCR. Tagging strategy — immutable digests, never deploy :latest."],
+    ["Container security","Non-root user, read-only root filesystem, scan with Trivy."],
+  ]},
+  { key:"k8s", title:"Kubernetes foundations", tag:"Core gap",
+    why:"You do not need the CKA yet. You need to hold a competent conversation about pods, services and why your app got OOMKilled.",
+    items:[
+    ["Control plane architecture","apiserver, etcd, scheduler, controller-manager. Then kubelet and kube-proxy on the node."],
+    ["Pods, ReplicaSets, Deployments","Rolling update mechanics, maxSurge and maxUnavailable, rollback."],
+    ["Services","ClusterIP, NodePort, LoadBalancer, headless. How kube-proxy actually routes traffic."],
+    ["Ingress and Gateway API","Ingress controllers, plus the newer Gateway API which now appears in the CKA."],
+    ["ConfigMaps and Secrets","Environment injection vs volume mounting, and why Secrets are only base64 by default."],
+    ["Probes","Liveness, readiness, startup — wired to Spring Boot Actuator correctly. Getting these wrong causes restart loops."],
+    ["Requests, limits and QoS","Guaranteed vs Burstable vs BestEffort. Why CPU limits throttle and memory limits kill."],
+    ["Namespaces, labels, selectors","How everything in Kubernetes finds everything else."],
+    ["Deploy your app end to end","kind or minikube locally, Spring Boot service plus Postgres, reachable through an ingress."],
+    ["Debug a broken pod","Deliberately break it. CrashLoopBackOff, ImagePullBackOff, Pending. Fix each without searching."],
+  ]},
+  { key:"dsa", title:"DSA — start now, never stop", tag:"Runs 12 months",
+    why:"Unavoidable for US-remote and product companies, lightly tested in Germany. Five to six problems a week for a year beats a two-month cram, and the cram does not survive interview pressure.",
+    items:[
+    ["Set the cadence","Five to six problems a week. Patterns, not volume. Redo problems you failed after two weeks."],
+    ["Arrays, two pointers, sliding window"],
+    ["Hashing and prefix sums"],
+    ["Binary search","Including binary search on the answer space, which is where most people fail."],
+    ["Stacks and monotonic stack"],
+    ["Linked lists","Reversal, cycle detection, merge patterns."],
+    ["Trees","DFS and BFS, BST properties, lowest common ancestor, path problems."],
+    ["Heaps and top-K"],
+    ["Graphs","BFS/DFS, topological sort, union-find, Dijkstra."],
+    ["Dynamic programming","1D, 2D, knapsack variants, longest increasing subsequence."],
+    ["Intervals and greedy"],
+    ["Backtracking","Permutations, combinations, N-queens, word search."],
+    ["Timed solo mocks","45 minutes, talking out loud, no IDE hints. Record yourself once."],
+  ]},
+]},
+
+{
+  no:"02", name:"Cloud, infrastructure as code, and shipping for real", when:"Months 3–5",
+  note:"This is where your side project stops being a learning exercise and becomes the strongest thing on your resume. Everything you build here is portfolio evidence, not just study.",
+  groups:[
+  { key:"aws", title:"AWS core toward SAA-C03", tag:"Cert track",
+    why:"Your entire cloud section says 'AWS S3, GitHub Actions, Presigned URLs'. The certification is a screening filter, not a skill signal — but abroad it passes the filter that a recruiter applies before a human reads your resume.",
+    items:[
+    ["IAM","Users, roles, policies, trust policies, AssumeRole, instance profiles. Heaviest exam domain at 30%."],
+    ["VPC","Subnets, route tables, internet and NAT gateways, security groups vs NACLs. The most common failure point."],
+    ["EC2","Instance families, AMIs, user data, EBS vs instance store, placement groups."],
+    ["S3 beyond what you know","Storage classes, lifecycle rules, versioning, bucket policies, event notifications, replication."],
+    ["RDS and Aurora","Multi-AZ vs read replicas — they solve different problems. Failover behaviour, parameter groups, backups."],
+    ["DynamoDB","Partition and sort keys, GSI vs LSI, and honestly assessing when it beats Postgres."],
+    ["Load balancing","ALB vs NLB, target groups, health checks, sticky sessions."],
+    ["Auto Scaling","Launch templates, target tracking vs step scaling, warm pools."],
+    ["ECS on Fargate","Task definitions, services, service discovery. The pragmatic container choice for a solo project."],
+    ["EKS","How it differs from self-managed, IRSA for pod-level IAM, managed node groups vs Fargate."],
+    ["Lambda","Cold starts, reserved and provisioned concurrency, event sources — and when not to use it."],
+    ["SQS, SNS, EventBridge","Visibility timeout, dead letter queues, FIFO vs standard, fan-out patterns."],
+    ["CloudFront and Route 53","Origins, cache behaviours, invalidation, routing policies, health checks."],
+    ["KMS, Secrets Manager, Parameter Store","Envelope encryption, rotation, and the cost difference that decides which you use."],
+    ["CloudWatch","Metrics, alarms, log groups, Logs Insights queries, custom metrics."],
+    ["Cost optimization","On-demand vs Savings Plans vs Spot. NAT Gateway as the classic bill shock. Cost Explorer and budgets."],
+    ["Well-Architected Framework","Six pillars. The exam is written against this framework, so the vocabulary matters."],
+    ["Practice exams","At least four full sets. Hit 85% consistently before you book."],
+    ["Sit SAA-C03","Passing score is 720 of 1000, compensatory scoring across the four domains."],
+  ]},
+  { key:"tf", title:"Terraform", tag:"Core gap",
+    why:"Clicking in the AWS console is invisible to an interviewer. A Terraform repo is provable, reviewable evidence that you can build infrastructure.",
+    items:[
+    ["HCL basics","Providers, resources, data sources, expressions and functions."],
+    ["State","What it actually is, why it is dangerous, remote backend in S3 with DynamoDB locking."],
+    ["Variables, locals, outputs","tfvars per environment. Sensitive variable handling."],
+    ["Modules","Write one. Version it. Learn when not to abstract — premature modules are worse than duplication."],
+    ["count vs for_each","And why for_each saves you when a list reorders. Dynamic blocks."],
+    ["The dependency graph","Implicit dependencies via references, explicit depends_on, and when you actually need it."],
+    ["plan, apply, destroy","Reading a plan properly. Detecting drift. terraform import for resources created by hand."],
+    ["Workspaces vs directory-per-environment","Know both, and know why most production teams choose directories."],
+    ["Build your whole stack in Terraform","VPC, ECS or EKS, RDS, S3, ALB, IAM, security groups. No console clicking."],
+    ["Terraform in CI","fmt, validate, tflint, and a plan-on-pull-request workflow that comments the diff."],
+  ]},
+  { key:"cicd", title:"CI/CD and shipping the product", tag:"Portfolio",
+    why:"This is where your React Native app earns its place. The mobile client is the product; the pipeline and infrastructure around it are the resume bullets.",
+    items:[
+    ["GitHub Actions in depth","Workflows, jobs, matrix builds, dependency caching, reusable workflows, composite actions."],
+    ["OIDC federation to AWS","Stop using long-lived access keys. This single change is a security conversation you can have in interviews."],
+    ["The full pipeline","Build → test → scan → build image → push → deploy, with real gates between stages."],
+    ["Environments and approvals","Staging and production separation, manual approval gates, environment secrets."],
+    ["Deployment strategies","Rolling, blue/green, canary. Which one your architecture can actually support and why."],
+    ["Database migrations in CI","Flyway or Liquibase. Backward-compatible schema changes so deploys and rollbacks do not break."],
+    ["Node.js API into the same pipeline","Containerized, Terraform-managed, same deployment path as a Java service. Treat it as one platform."],
+    ["Mobile build pipeline","EAS Build or fastlane, signing, versioning, automated store submission."],
+    ["Publish to the stores","Play Store and App Store. A shipped app with real installs is a stronger story than any tutorial project."],
+  ]},
+  { key:"obs", title:"Observability", tag:"Senior signal",
+    why:"Your resume claims you improved MTTR by 50% and ran on-call rotations. An interviewer will ask what you were looking at when the page fired. Have a real answer.",
+    items:[
+    ["Metrics, logs, traces","What each signal is genuinely for, and why teams that only have logs suffer."],
+    ["Structured logging","JSON output, correlation and trace IDs propagated across service boundaries."],
+    ["Micrometer to Prometheus","Instrument Spring Boot. The four golden signals: latency, traffic, errors, saturation."],
+    ["Grafana dashboards","Build one you would actually open at 3am, not one that looks impressive in a screenshot."],
+    ["OpenTelemetry","SDK, collector, auto-instrumentation. This is the direction the whole industry has settled on."],
+    ["Distributed tracing","Jaeger or Tempo. Learn to read a flame graph and find the slow span."],
+    ["SLIs, SLOs, error budgets","Alert on symptoms, not causes. This vocabulary is how senior candidates are identified."],
+    ["Break it on purpose","Inject latency and failures into your own app, then debug through your dashboards. Write down what was missing."],
+  ]},
+]},
+
+{
+  no:"03", name:"The depth that separates senior from mid", when:"Months 6–8",
+  note:"Everything above gets you past screening. This section is what you are actually assessed on in the interview loop.",
+  groups:[
+  { key:"kafka", title:"Kafka", tag:"Highest leverage",
+    why:"The single highest-value addition for a Java backend engineer. It also earns you the right to write 'event-driven' on the new resume — right now that claim has no broker behind it.",
+    items:[
+    ["The log abstraction","Topics, partitions, offsets, brokers, replication factor, ISR."],
+    ["Producers","acks settings, retries, the idempotent producer, batching and linger, custom partitioners."],
+    ["Consumers","Consumer groups, rebalancing protocols, auto vs manual offset commit and what each costs you."],
+    ["Delivery semantics","At-most-once, at-least-once, exactly-once. Be able to explain why exactly-once is narrower than it sounds."],
+    ["Idempotent consumers","Deduplication with a processed-message table. This is the practical answer interviewers want."],
+    ["Schema Registry","Avro or Protobuf, compatibility modes, evolving a schema without breaking consumers."],
+    ["Spring Kafka","Listener containers, error handlers, retry topics and dead letter topics."],
+    ["Transactional outbox","The pattern that solves dual-write. Then Debezium for change data capture."],
+    ["Partition key design","Ordering guarantees are per-partition. Choosing the key is the whole design decision."],
+    ["Consumer lag","How to measure it, how to alert on it, why it is your primary health metric."],
+    ["Kafka Streams","Enough to know what it does and when it is the right answer."],
+    ["Retrofit your own project","Rebuild one flow as genuinely event-driven. Now the resume bullet is true."],
+  ]},
+  { key:"redis", title:"Redis and caching", tag:"Practical",
+    why:"Your cart lock feature is a distributed locking problem you solved without a distributed lock. Learn the standard tools and you can tell that story properly.",
+    items:[
+    ["Data types","Strings, hashes, lists, sets, sorted sets, streams — and picking the right shape."],
+    ["Caching patterns","Cache-aside, read-through, write-through, write-behind. Trade-offs of each."],
+    ["Invalidation and TTL","The hard problem. Stale reads, TTL jitter, versioned keys."],
+    ["Stampede and thundering herd","Request coalescing, probabilistic early expiry, locks on cache miss."],
+    ["Eviction policies","LRU, LFU, allkeys vs volatile. What happens when you hit maxmemory."],
+    ["Distributed locks","SETNX with expiry, Redlock, and the well-known criticisms of it. Connect this to your cart lock."],
+    ["Rate limiting","Token bucket and sliding window implemented in Redis."],
+    ["Persistence and HA","RDB vs AOF. Sentinel vs Cluster and when you need either."],
+    ["Redis from Spring","@Cacheable, RedisTemplate, serialization gotchas that bite in production."],
+  ]},
+  { key:"sysdes", title:"System design", tag:"Interview core",
+    why:"You have the raw material — you decomposed a monolith. What you likely lack is the vocabulary to describe it the way a European or US interviewer expects to hear it.",
+    items:[
+    ["Back-of-envelope estimation","QPS, storage growth, bandwidth. Practise until it is fast and unembarrassing."],
+    ["Load balancing and proxies","L4 vs L7, connection pooling, keepalive, health checking."],
+    ["Partitioning","Sharding strategies, consistent hashing, hot partitions, resharding."],
+    ["Replication","Leader-follower, multi-leader, leaderless. Replication lag and read-your-writes."],
+    ["CAP and PACELC","State it honestly. Most candidates recite CAP wrong and it is an easy tell."],
+    ["Consistency models","Linearizable, causal, eventual. Session guarantees."],
+    ["Isolation levels","What repeatable read actually gives you in Postgres. MVCC, phantom reads, serializable."],
+    ["Distributed transactions","Two-phase commit, sagas — choreography vs orchestration — and the outbox pattern."],
+    ["Idempotency at the API boundary","Idempotency keys, request deduplication, safe retries."],
+    ["Resilience patterns","Rate limiting, backpressure, bulkheads, circuit breakers, retries with exponential backoff and jitter."],
+    ["Caching layers","Browser, CDN, application, database. Where each belongs and what it costs."],
+    ["Search","Inverted indexes, Elasticsearch fundamentals, when a LIKE query stops being viable."],
+    ["Read Designing Data-Intensive Applications","Cover to cover. It is the single highest-return book for your exact profile."],
+    ["Design drills","URL shortener, rate limiter, news feed, chat, ride-hailing, payment ledger, notification service."],
+    ["Write up your own migration","Turn your monolith decomposition into a proper design document. This becomes your best interview story."],
+  ]},
+  { key:"javadep", title:"Java and Spring depth", tag:"Where DE interviews go",
+    why:"German and Dutch interviews go deep on the language and framework rather than on puzzles. This is where your five years should show and often does not.",
+    items:[
+    ["Java Memory Model","happens-before, volatile semantics, safe publication, final field guarantees."],
+    ["Concurrency primitives","synchronized vs ReentrantLock, AQS internals, atomics and CAS."],
+    ["Executors and async","ExecutorService, ForkJoinPool, CompletableFuture composition and exception handling."],
+    ["Virtual threads","What Loom changes, what it does not, and the pinning problem."],
+    ["Collections internals","HashMap resize and treeification, ConcurrentHashMap, CopyOnWriteArrayList."],
+    ["Garbage collection","G1 vs ZGC, generational hypothesis, pause tuning, reading GC logs."],
+    ["Heap analysis","Taking a heap dump, using MAT, recognizing common leak patterns."],
+    ["JIT and benchmarking","Escape analysis, inlining, why naive microbenchmarks lie, JMH."],
+    ["Spring bean lifecycle","BeanPostProcessor, scopes, circular dependency resolution."],
+    ["Spring proxying","JDK dynamic proxies vs CGLIB, and why self-invocation silently breaks @Transactional."],
+    ["@Transactional in detail","Propagation, isolation, rollback rules, readOnly. The self-invocation trap is a standard question."],
+    ["Autoconfiguration","How Spring Boot decides what to configure, and how to debug it when it decides wrong."],
+    ["Hibernate","N+1 queries, fetch strategies, first and second level cache, dirty checking, LazyInitializationException."],
+    ["Testing properly","JUnit 5, Mockito, @SpringBootTest slices, Testcontainers, WireMock for external calls."],
+  ]},
+  { key:"evidence", title:"Turn the project into evidence", tag:"Portfolio",
+    why:"A deployed app with real users, real incidents and a real bill is worth more in an interview than three tutorial repos.",
+    items:[
+    ["Launch to real users","Even fifty. Real traffic produces real problems, which produce real stories."],
+    ["Analytics and crash reporting","Know what your users actually do and where the app breaks."],
+    ["Survive a production incident","Then write the postmortem. Timeline, root cause, what you changed."],
+    ["Optimize the AWS bill","Document before and after. Cost engineering is a senior signal almost nobody demonstrates."],
+    ["Write architecture decision records","Short ADRs for the significant choices. Interviewers love a candidate who documents reasoning."],
+  ]},
+]},
+
+{
+  no:"04", name:"Apply, interview, negotiate", when:"Months 9–12",
+  note:"Skills without a distribution strategy sit idle. This phase is a numbers game executed deliberately, not a hopeful scattering of applications.",
+  groups:[
+  { key:"creds", title:"Credentials and public proof", tag:"Optional but strong",
+    why:"Certifications carry more weight abroad than in India, because a recruiter who cannot place your employer's brand can still place a CNCF or AWS credential.",
+    items:[
+    ["Decide whether CKA is worth it","Strong yes if you want platform or SRE-adjacent roles. Skip it if you are staying purely backend."],
+    ["Troubleshooting — 30%","The heaviest domain. Cluster and node failures, misconfigured networking, broken workloads."],
+    ["Cluster architecture, install, config — 25%","RBAC, kubeadm bootstrap and upgrade, etcd backup and restore, Helm and Kustomize."],
+    ["Services and networking — 20%","Service types, ingress and Gateway API, CoreDNS, NetworkPolicies, CNI."],
+    ["Workloads and scheduling — 15%","Deployments, rolling updates, ConfigMaps and Secrets, autoscaling, taints, tolerations, affinity."],
+    ["Storage — 10%","PersistentVolumes, claims, StorageClasses, access modes, reclaim policies."],
+    ["Terminal speed drills","Aliases, kubectl explain, imperative commands, fast docs navigation. The exam is time-limited and hands-on."],
+    ["killer.sh simulator","Two attempts are included with the exam and are harder than the real thing. Use both."],
+    ["Land a merged open source PR","Something in the Java, Spring or Kafka ecosystem. Disproportionately credible to European hiring managers."],
+    ["Write three technical posts","The Terraform stack, the Kafka retrofit, the monolith decomposition. Written reasoning is rare and it travels."],
+  ]},
+  { key:"market", title:"Choose the market and build the list", tag:"Strategy",
+    why:"Advice for Germany and advice for US-remote diverge sharply. Pick one primary and one fallback, and stop splitting effort.",
+    items:[
+    ["Commit to a primary market","Germany and the Netherlands are the best fit for a Java/Spring profile. Decide and stop hedging."],
+    ["Germany — EU Blue Card","2026 thresholds: €45,934.20 for shortage occupations, which covers essentially all software engineering roles under ISCO-08 group 25. €50,700 for everything else."],
+    ["Germany — permanent residence timeline","21 months on a Blue Card with B1 German, 27 months without. Worth factoring into the language decision."],
+    ["Netherlands — highly skilled migrant","Only companies on the IND recognised sponsor register can hire you. Filter your target list against it before applying."],
+    ["Poland, Czechia, Portugal as fallback","Lower salaries, far easier entry, EU residency that compounds into everything else later."],
+    ["US-remote contracting","Highest pay, no visa needed, most competitive. Requires strong DSA and a visible public presence."],
+    ["Start German A1 to A2 if targeting DE","Not required for engineering roles. Moves the needle socially, in interviews, and materially for permanent residence."],
+    ["Build a 40–60 company target list","Only companies with evidence of sponsoring. Check the NL sponsor register and DE job ads mentioning visa support."],
+    ["Tailor per cluster, not per job","Three resume variants — backend, platform, full-stack — not sixty individual rewrites."],
+    ["Referral outreach","Ten specific, non-generic LinkedIn messages a week to engineers at target companies. Referrals beat cold applications by a wide margin."],
+    ["Track and measure","Log every application. If your response rate is under 10%, the resume is the problem, not the market."],
+  ]},
+  { key:"interview", title:"Interview execution", tag:"The last mile",
+    why:"Most Indian candidates with your experience fail on calibration, not capability — they under-explain, undersell scope, and have never been assessed by an interviewer outside India.",
+    items:[
+    ["Mock DSA with people outside India","The calibration difference is real and you cannot self-assess it."],
+    ["At least five system design mocks","Ideally with someone senior to you. The format punishes people who have never practised it out loud."],
+    ["Write eight STAR stories","Conflict, failure, mentoring, an incident, disagreeing with a manager, ambiguous requirements, a hard deadline, a technical choice you got wrong."],
+    ["Prepare your own resume for interrogation","Assume every bullet gets ten minutes. The 40% deployment improvement and the 6s-to-2s query fix will both be probed hard."],
+    ["Practise explaining architecture in three minutes","Record yourself. Fluency under pressure is a separate skill from knowing the material."],
+    ["Research compensation properly","levels.fyi, Glassdoor for DE and NL. German net pay is roughly 55–60% of gross — do not anchor on the headline number."],
+    ["Negotiate the whole package","Relocation allowance, visa and legal costs, sign-on, notice period buyout, remote-work days."],
+    ["Get the offer in writing before resigning","Contract salary must clear the Blue Card threshold. A contract slightly under it gets the visa refused."],
+  ]},
+]}
+];
+
+/* ============================================================
+   RENDER + STATE
+   ============================================================ */
+const board=document.getElementById('board');
+let state=new Set();
+const KEY='departure-dossier-v2';
+
+function build(){
+  PHASES.forEach((ph,pi)=>{
+    const sec=document.createElement('section');
+    sec.className='phase';
+    const head=document.createElement('div');
+    head.className='phase-head';
+    head.innerHTML=`<span class="phase-no">PHASE ${ph.no}</span>
+      <h2>${ph.name}</h2>
+      <span class="phase-when">${ph.when}</span>
+      <span class="phase-count" data-pc="${pi}"></span>`;
+    sec.appendChild(head);
+    const note=document.createElement('p');
+    note.className='phase-note';note.textContent=ph.note;
+    sec.appendChild(note);
+
+    ph.groups.forEach((g,gi)=>{
+      const div=document.createElement('div');
+      div.className='group';
+      div.dataset.p=pi;div.dataset.g=gi;
+
+      const btn=document.createElement('button');
+      btn.className='g-head';
+      btn.setAttribute('aria-expanded','false');
+      btn.innerHTML=`<span class="chev">▶</span>
+        <span class="g-title">${g.title}</span>
+        <span class="g-tag">${g.tag}</span>
+        <span class="g-prog"><span class="g-track"><span class="g-fill" style="width:0%"></span></span><span class="g-num">0/${g.items.length}</span></span>`;
+      btn.addEventListener('click',()=>{
+        const open=div.classList.toggle('open');
+        btn.setAttribute('aria-expanded',open?'true':'false');
+      });
+      div.appendChild(btn);
+
+      const body=document.createElement('div');
+      body.className='g-body';
+      const why=document.createElement('p');
+      why.className='g-why';why.textContent=g.why;
+      body.appendChild(why);
+
+      g.items.forEach((it,ii)=>{
+        const id=`${g.key}-${ii}`;
+        const row=document.createElement('div');
+        row.className='item';
+        const cb=document.createElement('input');
+        cb.type='checkbox';cb.id=id;
+        cb.addEventListener('change',()=>{
+          cb.checked?state.add(id):state.delete(id);
+          row.classList.toggle('is-done',cb.checked);
+          refresh();save();
+        });
+        const lb=document.createElement('label');
+        lb.setAttribute('for',id);
+        lb.innerHTML=`<span class="t">${it[0]}</span>${it[1]?`<span class="d">${it[1]}</span>`:''}`;
+        row.appendChild(cb);row.appendChild(lb);
+        body.appendChild(row);
+      });
+
+      const stamp=document.createElement('div');
+      stamp.className='stamp';
+      stamp.innerHTML=`Cleared<small>endorsed</small>`;
+      div.appendChild(stamp);
+      div.appendChild(body);
+      sec.appendChild(div);
+    });
+    board.appendChild(sec);
+  });
+}
+
+function counts(){
+  let total=0,done=0;const per=[];
+  PHASES.forEach((ph,pi)=>{
+    let pt=0,pd=0;
+    ph.groups.forEach((g,gi)=>{
+      g.items.forEach((_,ii)=>{
+        pt++;if(state.has(`${g.key}-${ii}`))pd++;
+      });
+    });
+    per.push([pd,pt]);total+=pt;done+=pd;
+  });
+  return{total,done,per};
+}
+
+function refresh(){
+  const{total,done,per}=counts();
+  document.getElementById('mDone').textContent=String(done).padStart(2,'0');
+  document.getElementById('mTotal').textContent=total;
+
+  const bars=document.getElementById('bars');
+  bars.innerHTML=PHASES.map((ph,i)=>{
+    const[d,t]=per[i];const p=t?Math.round(d/t*100):0;
+    return `<div class="barline"><span class="lbl">Phase ${ph.no}</span>
+      <span class="track"><span class="fill" style="width:${p}%"></span></span>
+      <span class="pct">${p}%</span></div>`;
+  }).join('');
+
+  PHASES.forEach((ph,i)=>{
+    const el=document.querySelector(`[data-pc="${i}"]`);
+    if(el)el.textContent=`${per[i][0]} / ${per[i][1]}`;
+  });
+
+  document.querySelectorAll('.group').forEach(div=>{
+    const pi=+div.dataset.p,gi=+div.dataset.g;
+    const items=PHASES[pi].groups[gi].items;
+    let d=0;const gk=PHASES[pi].groups[gi].key;
+    items.forEach((_,ii)=>{if(state.has(`${gk}-${ii}`))d++;});
+    const pct=items.length?d/items.length*100:0;
+    div.querySelector('.g-fill').style.width=pct+'%';
+    div.querySelector('.g-num').textContent=`${d}/${items.length}`;
+    div.classList.toggle('done',d===items.length&&items.length>0);
+  });
+
+  mrz(done,total);
+}
+
+function mrz(done,total){
+  const pct=total?Math.round(done/total*100):0;
+  const pad=(s,n,c='<')=>String(s).padEnd(n,c);
+  const l1=`P<INDCHAUBEY<<VARUN${pad('',24)}`.slice(0,44);
+  const l2=`ROADMAP2026<4IND<<<<<<<CLEARED${String(done).padStart(3,'0')}OF${String(total).padStart(3,'0')}<<${String(pct).padStart(2,'0')}`.slice(0,44);
+  const mark=s=>s.replace(/</g,'<span>&lt;</span>');
+  document.getElementById('mrz').innerHTML=mark(l1)+'<br>'+mark(l2);
+}
+
+/* ---------- persistence: Claude artifact storage, else browser localStorage ---------- */
+let t=null,mode='memory';
+const store={
+  async get(k){
+    if(window.storage){try{const r=await window.storage.get(k);if(r&&r.value){mode='synced';return r.value;}}catch(e){}}
+    try{const v=localStorage.getItem(k);if(v){mode='local';return v;}}catch(e){}
+    return null;
+  },
+  async set(k,v){
+    if(window.storage){try{await window.storage.set(k,v);mode='synced';return;}catch(e){}}
+    try{localStorage.setItem(k,v);mode='local';return;}catch(e){}
+    mode='memory';
+  },
+  async del(k){
+    if(window.storage){try{await window.storage.delete(k);}catch(e){}}
+    try{localStorage.removeItem(k);}catch(e){}
+  }
+};
+const LABEL={synced:'Saved',local:'Saved to this browser',memory:'Not saved — session only'};
+function flash(){
+  const s=document.getElementById('saved');
+  s.textContent=LABEL[mode];
+  s.classList.add('on');clearTimeout(t);
+  t=setTimeout(()=>s.classList.remove('on'),1600);
+}
+async function save(){
+  await store.set(KEY,JSON.stringify([...state]));
+  flash();
+}
+async function load(){
+  const v=await store.get(KEY);
+  if(v){try{state=new Set(JSON.parse(v));}catch(e){}}
+  state.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.checked=true;el.closest('.item').classList.add('is-done');}
+  });
+  refresh();
+}
+
+/* ---------- controls ---------- */
+document.getElementById('fToggle').addEventListener('click',e=>{
+  const on=e.target.getAttribute('aria-pressed')==='true';
+  e.target.setAttribute('aria-pressed',on?'false':'true');
+  e.target.textContent=on?'Hide cleared':'Show all';
+  document.querySelectorAll('.item').forEach(r=>{
+    r.classList.toggle('hide',!on&&r.querySelector('input').checked);
+  });
+});
+document.getElementById('expand').addEventListener('click',()=>{
+  document.querySelectorAll('.group').forEach(g=>{
+    g.classList.add('open');g.querySelector('.g-head').setAttribute('aria-expanded','true');
+  });
+});
+document.getElementById('collapse').addEventListener('click',()=>{
+  document.querySelectorAll('.group').forEach(g=>{
+    g.classList.remove('open');g.querySelector('.g-head').setAttribute('aria-expanded','false');
+  });
+});
+document.getElementById('reset').addEventListener('click',async()=>{
+  if(!confirm('Clear all progress? This cannot be undone.'))return;
+  state.clear();
+  document.querySelectorAll('.item input').forEach(c=>{
+    c.checked=false;c.closest('.item').classList.remove('is-done','hide');
+  });
+  refresh();
+  await store.del(KEY);
+});
+
+build();
+load();
+document.querySelector('.group').classList.add('open');
+document.querySelector('.g-head').setAttribute('aria-expanded','true');
+</script>
+</body>
+</html>
