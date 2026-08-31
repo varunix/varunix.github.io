@@ -279,6 +279,9 @@ footer{
   <button class="btn" id="expand">Expand all</button>
   <button class="btn" id="collapse">Collapse all</button>
   <span class="spacer"></span>
+  <button class="btn" id="export">Export backup</button>
+  <button class="btn" id="import">Import</button>
+  <input type="file" id="file" accept="application/json" hidden>
   <span class="saved" id="saved">Saved</span>
   <button class="btn danger" id="reset">Reset</button>
 </div>
@@ -299,11 +302,30 @@ footer{
    ============================================================ */
 const PHASES = [
 {
-  no:"01", name:"Close the container gap", when:"Months 1–2",
-  note:"Containers are the single thing most likely to get you filtered out before a human reads anything. Docker and Kubernetes first, and start the DSA cadence now so it has twelve months to compound rather than two.",
+  no:"01", name:"Foundations", when:"Months 1–2",
+  note:"You are a beginner at infrastructure, and this phase respects that. Linux and networking first, because everything above is built from them. Docker second, because it is the one container concept that stands on its own. Start the DSA cadence now so it has twelve months to compound.",
   groups:[
-  { key:"docker", title:"Docker", tag:"Core gap",
-    why:"You have no containerization on your resume at all. For a senior backend role abroad this is disqualifying at screening, regardless of your microservices experience.",
+  { key:"foundations", title:"Linux, networking and the shell", tag:"Start here",
+    why:"Every layer above this is these same concepts wearing a different name. Docker isolation is Linux namespaces. VPC routing is subnets and CIDR. Kubernetes networking is both again. Skip this and you will memorize commands instead of understanding them, which collapses the moment an interviewer asks why.",
+    items:[
+    ["Filesystem and permissions","Users, groups, chmod and chown. This is why containers should not run as root."],
+    ["Processes and signals","ps, top, kill. SIGTERM vs SIGKILL — and therefore what happens when a container is asked to stop."],
+    ["Namespaces and cgroups","The actual Linux features Docker is built from. Ten minutes here makes containers stop being magic."],
+    ["systemd","Units, services, enable vs start, journalctl. How a server runs your app when there is no Docker."],
+    ["Shell fluency","Pipes, redirection, grep, sed, awk, find, xargs. You will live in these for the next year."],
+    ["Bash scripting","Variables, conditionals, loops, exit codes, and set -euo pipefail. Every CI pipeline is bash underneath."],
+    ["SSH properly","Key pairs, ~/.ssh/config, agent forwarding, port tunneling."],
+    ["Package management and transfer","apt, scp, rsync. Getting things onto a server."],
+    ["Reading logs on a box","tail -f, journalctl, and knowing where things actually write logs."],
+    ["TCP/IP in practical terms","What genuinely happens between typing a URL and getting bytes back."],
+    ["IP addressing and CIDR","Subnet math by hand until it is boring. Non-negotiable before AWS VPC — this is where most people quietly fail."],
+    ["Ports, sockets and the TCP handshake","Connection states, and what TIME_WAIT means when you see it in production."],
+    ["DNS","Resolution chain, record types, TTL, and using dig to prove what is happening."],
+    ["HTTP and TLS","Methods, status codes, headers, keep-alive, and what the TLS handshake actually exchanges."],
+    ["Diagnose a broken connection","ss, curl -v, dig, traceroute, tcpdump. Practise on something you deliberately broke."],
+  ]},
+    { key:"docker", title:"Docker", tag:"Core gap",
+    why:"The one container concept that stands on its own without orchestration. It also has no equivalent in your current experience, and its absence is disqualifying at screening for senior backend roles abroad.",
     items:[
     ["Images, containers, layers","How the union filesystem works and why layer order determines build speed."],
     ["Dockerfile mechanics","Instruction ordering, build cache invalidation, .dockerignore."],
@@ -316,21 +338,7 @@ const PHASES = [
     ["Registries","Push to ECR and GHCR. Tagging strategy — immutable digests, never deploy :latest."],
     ["Container security","Non-root user, read-only root filesystem, scan with Trivy."],
   ]},
-  { key:"k8s", title:"Kubernetes foundations", tag:"Core gap",
-    why:"You do not need the CKA yet. You need to hold a competent conversation about pods, services and why your app got OOMKilled.",
-    items:[
-    ["Control plane architecture","apiserver, etcd, scheduler, controller-manager. Then kubelet and kube-proxy on the node."],
-    ["Pods, ReplicaSets, Deployments","Rolling update mechanics, maxSurge and maxUnavailable, rollback."],
-    ["Services","ClusterIP, NodePort, LoadBalancer, headless. How kube-proxy actually routes traffic."],
-    ["Ingress and Gateway API","Ingress controllers, plus the newer Gateway API which now appears in the CKA."],
-    ["ConfigMaps and Secrets","Environment injection vs volume mounting, and why Secrets are only base64 by default."],
-    ["Probes","Liveness, readiness, startup — wired to Spring Boot Actuator correctly. Getting these wrong causes restart loops."],
-    ["Requests, limits and QoS","Guaranteed vs Burstable vs BestEffort. Why CPU limits throttle and memory limits kill."],
-    ["Namespaces, labels, selectors","How everything in Kubernetes finds everything else."],
-    ["Deploy your app end to end","kind or minikube locally, Spring Boot service plus Postgres, reachable through an ingress."],
-    ["Debug a broken pod","Deliberately break it. CrashLoopBackOff, ImagePullBackOff, Pending. Fix each without searching."],
-  ]},
-  { key:"dsa", title:"DSA — start now, never stop", tag:"Runs 12 months",
+    { key:"dsa", title:"DSA — start now, never stop", tag:"Runs 12 months",
     why:"Unavoidable for US-remote and product companies, lightly tested in Germany. Five to six problems a week for a year beats a two-month cram, and the cram does not survive interview pressure.",
     items:[
     ["Set the cadence","Five to six problems a week. Patterns, not volume. Redo problems you failed after two weeks."],
@@ -346,15 +354,29 @@ const PHASES = [
     ["Intervals and greedy"],
     ["Backtracking","Permutations, combinations, N-queens, word search."],
     ["Timed solo mocks","45 minutes, talking out loud, no IDE hints. Record yourself once."],
-  ]},
+  ]}
 ]},
 
 {
-  no:"02", name:"Cloud, infrastructure as code, and shipping for real", when:"Months 3–5",
-  note:"This is where your side project stops being a learning exercise and becomes the strongest thing on your resume. Everything you build here is portfolio evidence, not just study.",
+  no:"02", name:"Run it yourself, then automate it", when:"Months 3–5",
+  note:"Deploy something by hand and feel what is painful about it. Then learn the cloud services that fix each specific pain, automate the deploy you already did manually, and finally codify the infrastructure you now actually understand. Every tool here answers a problem you had the week before.",
   groups:[
-  { key:"aws", title:"AWS core toward SAA-C03", tag:"Cert track",
-    why:"Your entire cloud section says 'AWS S3, GitHub Actions, Presigned URLs'. The certification is a screening filter, not a skill signal — but abroad it passes the filter that a recruiter applies before a human reads your resume.",
+  { key:"manual", title:"Deploy it by hand, once", tag:"The pain that teaches",
+    why:"Kubernetes solves problems you have not had yet. Deploy a service to a bare server, keep it alive, run two copies behind a load balancer manually — then every tool that follows is an obvious answer to a problem you personally had, rather than vocabulary you are memorizing.",
+    items:[
+    ["Choose the one service you carry all year","Your Spring Boot service or the Node API behind your app. Everything downstream attaches to this one codebase. Decide in week one."],
+    ["Launch an EC2 instance and SSH in","Key pair, security group, public subnet. Do it in the console this once — never again after Terraform."],
+    ["Run your app manually","Install the runtime, start the process, then close the terminal and watch it die."],
+    ["Keep it alive with systemd","Write the unit file, enable it, reboot the box and confirm it comes back up on its own."],
+    ["Put nginx in front","Reverse proxy to your app, then TLS with Let's Encrypt. Now you understand what an ingress does."],
+    ["Attach a managed database","RDS instance, connection string, security group rules between the two. Not a database on the same box."],
+    ["Run two copies behind a load balancer","By hand. Now you have session state, health checks and config drift as real problems."],
+    ["Deploy a new version with zero downtime","Manually. This is the moment the whole rest of the roadmap justifies itself."],
+    ["Write down every single step","This document becomes your CI/CD pipeline in the next group and your Terraform after that."],
+    ["Break it deliberately","Kill the process, fill the disk, exhaust memory, misconfigure the security group. Debug with nothing but Linux tools."],
+  ]},
+    { key:"aws", title:"AWS core toward SAA-C03", tag:"Cert track",
+    why:"Do IAM and VPC first and in that order — they are where beginners fail, and the CIDR work from phase 01 pays off immediately here. Everything after those two is comparatively easy. The certification is a screening filter rather than a skill signal, but abroad it is the filter applied before a human reads anything.",
     items:[
     ["IAM","Users, roles, policies, trust policies, AssumeRole, instance profiles. Heaviest exam domain at 30%."],
     ["VPC","Subnets, route tables, internet and NAT gateways, security groups vs NACLs. The most common failure point."],
@@ -376,21 +398,7 @@ const PHASES = [
     ["Practice exams","At least four full sets. Hit 85% consistently before you book."],
     ["Sit SAA-C03","Passing score is 720 of 1000, compensatory scoring across the four domains."],
   ]},
-  { key:"tf", title:"Terraform", tag:"Core gap",
-    why:"Clicking in the AWS console is invisible to an interviewer. A Terraform repo is provable, reviewable evidence that you can build infrastructure.",
-    items:[
-    ["HCL basics","Providers, resources, data sources, expressions and functions."],
-    ["State","What it actually is, why it is dangerous, remote backend in S3 with DynamoDB locking."],
-    ["Variables, locals, outputs","tfvars per environment. Sensitive variable handling."],
-    ["Modules","Write one. Version it. Learn when not to abstract — premature modules are worse than duplication."],
-    ["count vs for_each","And why for_each saves you when a list reorders. Dynamic blocks."],
-    ["The dependency graph","Implicit dependencies via references, explicit depends_on, and when you actually need it."],
-    ["plan, apply, destroy","Reading a plan properly. Detecting drift. terraform import for resources created by hand."],
-    ["Workspaces vs directory-per-environment","Know both, and know why most production teams choose directories."],
-    ["Build your whole stack in Terraform","VPC, ECS or EKS, RDS, S3, ALB, IAM, security groups. No console clicking."],
-    ["Terraform in CI","fmt, validate, tflint, and a plan-on-pull-request workflow that comments the diff."],
-  ]},
-  { key:"cicd", title:"CI/CD and shipping the product", tag:"Portfolio",
+    { key:"cicd", title:"CI/CD and shipping the product", tag:"Portfolio",
     why:"This is where your React Native app earns its place. The mobile client is the product; the pipeline and infrastructure around it are the resume bullets.",
     items:[
     ["GitHub Actions in depth","Workflows, jobs, matrix builds, dependency caching, reusable workflows, composite actions."],
@@ -403,8 +411,28 @@ const PHASES = [
     ["Mobile build pipeline","EAS Build or fastlane, signing, versioning, automated store submission."],
     ["Publish to the stores","Play Store and App Store. A shipped app with real installs is a stronger story than any tutorial project."],
   ]},
+    { key:"tf", title:"Terraform", tag:"Core gap",
+    why:"Clicking in the AWS console is invisible to an interviewer. A Terraform repo is provable, reviewable evidence that you can build infrastructure.",
+    items:[
+    ["HCL basics","Providers, resources, data sources, expressions and functions."],
+    ["State","What it actually is, why it is dangerous, remote backend in S3 with DynamoDB locking."],
+    ["Variables, locals, outputs","tfvars per environment. Sensitive variable handling."],
+    ["Modules","Write one. Version it. Learn when not to abstract — premature modules are worse than duplication."],
+    ["count vs for_each","And why for_each saves you when a list reorders. Dynamic blocks."],
+    ["The dependency graph","Implicit dependencies via references, explicit depends_on, and when you actually need it."],
+    ["plan, apply, destroy","Reading a plan properly. Detecting drift. terraform import for resources created by hand."],
+    ["Workspaces vs directory-per-environment","Know both, and know why most production teams choose directories."],
+    ["Build your whole stack in Terraform","VPC, ECS or EKS, RDS, S3, ALB, IAM, security groups. No console clicking."],
+    ["Terraform in CI","fmt, validate, tflint, and a plan-on-pull-request workflow that comments the diff."],
+  ]}
+]},
+
+{
+  no:"03", name:"Operate it like a professional", when:"Months 6–7",
+  note:"Now you have something running that you care about. Observability comes before Kubernetes on purpose — you need to be able to see a system before it is worth adding orchestration to it. Kubernetes lands here, once you have personally suffered the manual version.",
+  groups:[
   { key:"obs", title:"Observability", tag:"Senior signal",
-    why:"Your resume claims you improved MTTR by 50% and ran on-call rotations. An interviewer will ask what you were looking at when the page fired. Have a real answer.",
+    why:"This comes before Kubernetes on purpose. You need to be able to see a system before it is worth adding orchestration to it, and you now have something running that you actually care about.",
     items:[
     ["Metrics, logs, traces","What each signal is genuinely for, and why teams that only have logs suffer."],
     ["Structured logging","JSON output, correlation and trace IDs propagated across service boundaries."],
@@ -415,11 +443,25 @@ const PHASES = [
     ["SLIs, SLOs, error budgets","Alert on symptoms, not causes. This vocabulary is how senior candidates are identified."],
     ["Break it on purpose","Inject latency and failures into your own app, then debug through your dashboards. Write down what was missing."],
   ]},
+    { key:"k8s", title:"Kubernetes foundations", tag:"Core gap",
+    why:"This sits in month six deliberately. By now you have deployed by hand, automated it, and watched it in Grafana — so every Kubernetes object maps to a problem you personally had. Learned in month one it would have been vocabulary.",
+    items:[
+    ["Control plane architecture","apiserver, etcd, scheduler, controller-manager. Then kubelet and kube-proxy on the node."],
+    ["Pods, ReplicaSets, Deployments","Rolling update mechanics, maxSurge and maxUnavailable, rollback."],
+    ["Services","ClusterIP, NodePort, LoadBalancer, headless. How kube-proxy actually routes traffic."],
+    ["Ingress and Gateway API","Ingress controllers, plus the newer Gateway API which now appears in the CKA."],
+    ["ConfigMaps and Secrets","Environment injection vs volume mounting, and why Secrets are only base64 by default."],
+    ["Probes","Liveness, readiness, startup — wired to Spring Boot Actuator correctly. Getting these wrong causes restart loops."],
+    ["Requests, limits and QoS","Guaranteed vs Burstable vs BestEffort. Why CPU limits throttle and memory limits kill."],
+    ["Namespaces, labels, selectors","How everything in Kubernetes finds everything else."],
+    ["Deploy your app end to end","kind or minikube locally, Spring Boot service plus Postgres, reachable through an ingress."],
+    ["Debug a broken pod","Deliberately break it. CrashLoopBackOff, ImagePullBackOff, Pending. Fix each without searching."],
+  ]}
 ]},
 
 {
-  no:"03", name:"The depth that separates senior from mid", when:"Months 6–8",
-  note:"Everything above gets you past screening. This section is what you are actually assessed on in the interview loop.",
+  no:"04", name:"The depth that gets offers", when:"Months 7–10",
+  note:"Everything above gets you past screening. This is what you are actually assessed on once a human is in the room, and it is where your five years of Java experience should finally show.",
   groups:[
   { key:"kafka", title:"Kafka", tag:"Highest leverage",
     why:"The single highest-value addition for a Java backend engineer. It also earns you the right to write 'event-driven' on the new resume — right now that claim has no broker behind it.",
@@ -437,7 +479,7 @@ const PHASES = [
     ["Kafka Streams","Enough to know what it does and when it is the right answer."],
     ["Retrofit your own project","Rebuild one flow as genuinely event-driven. Now the resume bullet is true."],
   ]},
-  { key:"redis", title:"Redis and caching", tag:"Practical",
+    { key:"redis", title:"Redis and caching", tag:"Practical",
     why:"Your cart lock feature is a distributed locking problem you solved without a distributed lock. Learn the standard tools and you can tell that story properly.",
     items:[
     ["Data types","Strings, hashes, lists, sets, sorted sets, streams — and picking the right shape."],
@@ -450,7 +492,7 @@ const PHASES = [
     ["Persistence and HA","RDB vs AOF. Sentinel vs Cluster and when you need either."],
     ["Redis from Spring","@Cacheable, RedisTemplate, serialization gotchas that bite in production."],
   ]},
-  { key:"sysdes", title:"System design", tag:"Interview core",
+    { key:"sysdes", title:"System design", tag:"Interview core",
     why:"You have the raw material — you decomposed a monolith. What you likely lack is the vocabulary to describe it the way a European or US interviewer expects to hear it.",
     items:[
     ["Back-of-envelope estimation","QPS, storage growth, bandwidth. Practise until it is fast and unembarrassing."],
@@ -469,7 +511,7 @@ const PHASES = [
     ["Design drills","URL shortener, rate limiter, news feed, chat, ride-hailing, payment ledger, notification service."],
     ["Write up your own migration","Turn your monolith decomposition into a proper design document. This becomes your best interview story."],
   ]},
-  { key:"javadep", title:"Java and Spring depth", tag:"Where DE interviews go",
+    { key:"javadep", title:"Java and Spring depth", tag:"Where DE interviews go",
     why:"German and Dutch interviews go deep on the language and framework rather than on puzzles. This is where your five years should show and often does not.",
     items:[
     ["Java Memory Model","happens-before, volatile semantics, safe publication, final field guarantees."],
@@ -487,7 +529,7 @@ const PHASES = [
     ["Hibernate","N+1 queries, fetch strategies, first and second level cache, dirty checking, LazyInitializationException."],
     ["Testing properly","JUnit 5, Mockito, @SpringBootTest slices, Testcontainers, WireMock for external calls."],
   ]},
-  { key:"evidence", title:"Turn the project into evidence", tag:"Portfolio",
+    { key:"evidence", title:"Turn the project into evidence", tag:"Portfolio",
     why:"A deployed app with real users, real incidents and a real bill is worth more in an interview than three tutorial repos.",
     items:[
     ["Launch to real users","Even fifty. Real traffic produces real problems, which produce real stories."],
@@ -495,11 +537,11 @@ const PHASES = [
     ["Survive a production incident","Then write the postmortem. Timeline, root cause, what you changed."],
     ["Optimize the AWS bill","Document before and after. Cost engineering is a senior signal almost nobody demonstrates."],
     ["Write architecture decision records","Short ADRs for the significant choices. Interviewers love a candidate who documents reasoning."],
-  ]},
+  ]}
 ]},
 
 {
-  no:"04", name:"Apply, interview, negotiate", when:"Months 9–12",
+  no:"05", name:"Apply, interview, negotiate", when:"Months 10–12",
   note:"Skills without a distribution strategy sit idle. This phase is a numbers game executed deliberately, not a hopeful scattering of applications.",
   groups:[
   { key:"creds", title:"Credentials and public proof", tag:"Optional but strong",
@@ -516,7 +558,7 @@ const PHASES = [
     ["Land a merged open source PR","Something in the Java, Spring or Kafka ecosystem. Disproportionately credible to European hiring managers."],
     ["Write three technical posts","The Terraform stack, the Kafka retrofit, the monolith decomposition. Written reasoning is rare and it travels."],
   ]},
-  { key:"market", title:"Choose the market and build the list", tag:"Strategy",
+    { key:"market", title:"Choose the market and build the list", tag:"Strategy",
     why:"Advice for Germany and advice for US-remote diverge sharply. Pick one primary and one fallback, and stop splitting effort.",
     items:[
     ["Commit to a primary market","Germany and the Netherlands are the best fit for a Java/Spring profile. Decide and stop hedging."],
@@ -531,7 +573,7 @@ const PHASES = [
     ["Referral outreach","Ten specific, non-generic LinkedIn messages a week to engineers at target companies. Referrals beat cold applications by a wide margin."],
     ["Track and measure","Log every application. If your response rate is under 10%, the resume is the problem, not the market."],
   ]},
-  { key:"interview", title:"Interview execution", tag:"The last mile",
+    { key:"interview", title:"Interview execution", tag:"The last mile",
     why:"Most Indian candidates with your experience fail on calibration, not capability — they under-explain, undersell scope, and have never been assessed by an interviewer outside India.",
     items:[
     ["Mock DSA with people outside India","The calibration difference is real and you cannot self-assess it."],
@@ -542,8 +584,9 @@ const PHASES = [
     ["Research compensation properly","levels.fyi, Glassdoor for DE and NL. German net pay is roughly 55–60% of gross — do not anchor on the headline number."],
     ["Negotiate the whole package","Relocation allowance, visa and legal costs, sign-on, notice period buyout, remote-work days."],
     ["Get the offer in writing before resigning","Contract salary must clear the Blue Card threshold. A contract slightly under it gets the visa refused."],
-  ]},
-]}
+  ]}
+]},
+
 ];
 
 /* ============================================================
@@ -733,6 +776,32 @@ document.getElementById('collapse').addEventListener('click',()=>{
   document.querySelectorAll('.group').forEach(g=>{
     g.classList.remove('open');g.querySelector('.g-head').setAttribute('aria-expanded','false');
   });
+});
+document.getElementById('export').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({v:2,saved:new Date().toISOString(),done:[...state]},null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`dossier-progress-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();URL.revokeObjectURL(a.href);
+});
+document.getElementById('import').addEventListener('click',()=>document.getElementById('file').click());
+document.getElementById('file').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!Array.isArray(d.done))throw 0;
+      state=new Set(d.done);
+      document.querySelectorAll('.item input').forEach(c=>{
+        c.checked=state.has(c.id);
+        c.closest('.item').classList.toggle('is-done',c.checked);
+      });
+      refresh();save();
+    }catch(err){alert('That file is not a dossier backup. Pick the JSON exported from this page.');}
+    e.target.value='';
+  };
+  r.readAsText(f);
 });
 document.getElementById('reset').addEventListener('click',async()=>{
   if(!confirm('Clear all progress? This cannot be undone.'))return;
